@@ -10,6 +10,7 @@ import os
 import random
 
 
+#MARK# Cyclic Shift
 def roll(x, shift, dim):
     """
     Similar to np.roll but applies to PyTorch Tensors.
@@ -33,6 +34,7 @@ def roll(x, shift, dim):
     return torch.cat((right, left), dim=dim)
 
 
+#MARK# FFT
 def fftshift(x, dim=(-2,-1)):
     """
     Similar to np.fft.fftshift but applies to PyTorch Tensors
@@ -52,9 +54,10 @@ def fftshift(x, dim=(-2,-1)):
 
     return roll(x, shift, dim)
 
+#MARK# Yet another FFT but combines real and imag
 def real_to_complex(img):
-    if len(img.shape)==3:
-        data = img.unsqueeze(0)
+    if len(img.shape)==3: # [c, h, w]
+        data = img.unsqueeze(0) # [1, c, h, w]
     else:
         data = img
     y = torch.fft.fft2(data)
@@ -64,6 +67,7 @@ def real_to_complex(img):
         y_complex = y_complex[0]
     return y_complex
 
+#MARK# Fuck
 def complex_to_real(data):
     if len(data.shape)==3:
         data1 = data.unsqueeze(0)
@@ -79,8 +83,9 @@ def complex_to_real(data):
         y = y[0]
     return y
 
+#MARK# Add mask with scale of width or height
 def crop_k_data(data, scale):
-    _,h,w = data.shape
+    _,h,w = data.shape  # [c, h, w]
     lr_h = h//scale
     lr_w = w//scale
     top_left_h = h//2-lr_h//2
@@ -88,6 +93,7 @@ def crop_k_data(data, scale):
     croped_data = data[:, top_left_h:(top_left_h+lr_h), top_left_w:(top_left_w+lr_w)]
     return croped_data
 
+#MARK# A piece of shit, I have no idea what is this and I don't want to read
 def gen_mask(size, scale):
     h,w = size
     mask = torch.zeros(size)
@@ -98,6 +104,7 @@ def gen_mask(size, scale):
     mask[top_left_h:(top_left_h+lr_h), top_left_w:(top_left_w+lr_w)] = torch.ones(lr_h,lr_w)
     return mask
 
+#MARK# OK, a standard torch DataLoader
 class IXI_train(data.Dataset):
     def __init__(self, opt, train):
         super(IXI_train, self).__init__()

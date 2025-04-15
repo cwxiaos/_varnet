@@ -39,6 +39,8 @@ def main():
                         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
     args = parser.parse_args()
+
+    #MAKR# Load Yaml Configuration
     opt = option.parse(args.opt, is_train=True)
     
     #### distributed training settings
@@ -52,6 +54,7 @@ def main():
         world_size = torch.distributed.get_world_size()
         rank = torch.distributed.get_rank()
 
+    #MARK# Load Pretrained Model
     #### loading resume state if exists
     if opt['path'].get('resume_state', None):
         # distributed resuming: all load into default GPU
@@ -61,6 +64,7 @@ def main():
     else:
         resume_state = None
 
+    #MARK# Init Logger
     #### mkdir and loggers
     if rank <= 0:  # normal training (rank -1) OR distributed training (rank 0)
         if resume_state is None:
@@ -90,7 +94,11 @@ def main():
 
     # convert to NoneDict, which returns None for missing keys
     opt = option.dict_to_nonedict(opt)
+
+    #MARK# IXI or BrainTS, for the two datasets
     which_model = opt['mode']
+
+    #MARK# Seed, fucking useless
     #### random seed
     seed = opt['train']['manual_seed']
     if seed is None:
@@ -103,7 +111,8 @@ def main():
     # torch.backends.cudnn.deterministic = True
 
     #### create train and val dataloader
-    dataset_ratio = 1.0 # dataset_ratio = 200  # enlarge the size of each epoch
+    dataset_ratio = 1.0
+    # dataset_ratio = 200  # enlarge the size of each epoch
     for phase, dataset_opt in opt['datasets'].items():
         if phase == 'train':
             train_set = create_dataset(dataset_opt, train=True)
@@ -133,6 +142,7 @@ def main():
     assert val_loader is not None
 
     #### create model
+    #MAKR# What the fuck is the two mode
     model = create_model(opt)
 
     #### resume training
@@ -228,7 +238,8 @@ def main():
                         for i in range(img_num):
                             sr_img_1 = visuals["im1_restore"][i, 0, :, :]  # (1, w, h)
                             gt_img_1 = visuals["im1_GT"][i, 0, :, :]  # (1, w, h) 
-                                        
+                        
+                            #MARK# Metrics
                             # calculate PSNR
                             if which_model == 'IXI' or which_model == 'brain' or which_model == 'knee':
                                 cur_psnr_im1 = util.calculate_psnr(sr_img_1.numpy()*255., gt_img_1.numpy()*255.)

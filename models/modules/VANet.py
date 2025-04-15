@@ -167,6 +167,7 @@ class VANet(nn.Module):
         
         return output_img
     
+    #MARK# The Half-quadratic splitting iter
     def forward(self, x, y, mask):
         # x: input low-quality target image [b,1,h,w]
         # y: input high-quality ref image [b,1,h,w]
